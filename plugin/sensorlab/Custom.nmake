@@ -1,0 +1,30 @@
+#
+
+include ..\config.nmake
+
+all: sensorlab
+
+sensorlab:: 
+	cd sensorlab
+	$(MAKE) /$(MAKEFLAGS) -f Makefile.nmake
+	cd ..
+
+clean:
+	cd sensorlab
+	$(MAKE) /$(MAKEFLAGS) -f Makefile.nmake clean
+	cd ..
+
+distclean: clean
+	cd sensorlab
+	$(MAKE) /$(MAKEFLAGS) -f Makefile.nmake distclean
+	cd ..
+
+maintainer-clean: distclean
+	cd sensorlab
+	$(MAKE) /$(MAKEFLAGS) -f Makefile.nmake maintainer-clean
+	cd ..
+
+install-plugins:
+!IFDEF ENABLE_LIBWIRESHARK
+	xcopy sensorlab\*.dll ..\$(INSTALL_DIR)\plugins\ /d
+!ENDIF
