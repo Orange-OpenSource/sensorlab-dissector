@@ -469,7 +469,7 @@ static const value_string unit_names_dictionary[] = {
 		{	UNIT_KATAL				     , 		"kat"				},
 		{	UNIT_DB					     , 		"dB"				},
 		{	UNIT_DBW				     , 		"dBW"				},
-		{	UNIT_DBMW				     , 		"dBmW"				},
+		{	UNIT_DBMW				     , 		"dBm"				},
 		{ 	0 							 ,       NULL 				}
 };
 
