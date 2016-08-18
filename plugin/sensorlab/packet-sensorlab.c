@@ -37,6 +37,7 @@
 #include <epan/prefs.h>
 #include <epan/wmem/wmem.h>
 #include <epan/to_str.h>
+#include <epan/expert.h>
 
 #include "packet-sensorlab.h"
 #include "include/sensorlab-frame-format.h"
@@ -136,6 +137,12 @@ static hf_register_info sensorlab_header_fields[] = {
 		{ &hf_sensorlab_propertyvaluedouble,	{ "Property Value", "sensorlab.value",FT_DOUBLE, BASE_NONE, NULL, 0x0, "Property Value", HFILL }					},
 		{ &hf_sensorlab_propertyvalueasciiarray,	{ "Property Value", "sensorlab.value",FT_STRING, BASE_NONE, NULL, 0x0, "Property Value", HFILL }					},
 		{ &hf_sensorlab_propertyvaluebytearray,	{ "Property Value", "sensorlab.value",FT_BYTES, BASE_NONE, NULL, 0x0, "Property Value", HFILL }						},
+};
+
+expert_module_t* expert_sensorlab;
+static expert_field ei_sensorlab_event_id = EI_INIT;
+static ei_register_info expert_infos[] = {
+	{ &ei_sensorlab_event_id,  { "sensorlab.event_id_unknown", PI_MALFORMED, PI_ERROR, "Event ID Unknown Cannot Dissect", EXPFILL }},
 };
 
 static gint32 ett_sensorlab = -1;
@@ -316,6 +323,9 @@ proto_register_sensorlab(void){
 	protocol_sensorlab_id = proto_register_protocol( "sensorlab", "sensorlab", "slab" );
 	proto_register_field_array(protocol_sensorlab_id, sensorlab_header_fields, array_length(sensorlab_header_fields));
 	proto_register_subtree_array(sensorlab_expansion_tree_types, array_length(sensorlab_expansion_tree_types));
+	expert_sensorlab = expert_register_protocol(protocol_sensorlab_id);
+	expert_register_field_array(expert_sensorlab, expert_infos, array_length(expert_infos));
+
 	register_init_routine(proto_init_sensorlab);
 	register_dissector("sensorlab", dissect_sensorlab, protocol_sensorlab_id);
 }
@@ -786,6 +796,8 @@ display_entity_property_add(packet_info* pinfo, sensorlab_frame_info_s* info, pr
 	col_add_fstr(pinfo->cinfo, COL_INFO, "[Node %"PRIu32"](%s) " , info->node_id, info->payload.entity_info.name);
 
 	sensorlab_tree = proto_item_add_subtree(tree, ett_sensorlab);
+	proto_tree_add_item(sensorlab_tree, hf_sensorlab_nodeid, tvb, NODE_ID_FIELD, NODE_ID_FIELD_LENGTH, ENC_LITTLE_ENDIAN);
+	proto_tree_add_item(sensorlab_tree, hf_sensorlab_eventid, tvb, EVENT_ID_FIELD, EVENT_ID_FIELD_LENGTH, ENC_LITTLE_ENDIAN);
 	proto_tree_add_item(sensorlab_tree, hf_sensorlab_entityid, tvb, ENTITY_PROPERTY_ADD_ENTITY_ID_FIELD, ENTITY_ID_FIELD_LENGTH, ENC_LITTLE_ENDIAN);
 	properties_count_item = proto_tree_add_item(sensorlab_tree, hf_sensorlab_propertiescount, tvb, ENTITY_PROPERTY_ADD_PROPERTIES_COUNT_FIELD, PROPERTIES_COUNT_FIELD_LENGTH, ENC_LITTLE_ENDIAN);
 	properties_tree = proto_item_add_subtree(properties_count_item, ett_properties);
@@ -894,6 +906,8 @@ display_link_remove(packet_info* pinfo, sensorlab_frame_info_s* info, tvbuff_t* 
 	col_add_fstr(pinfo->cinfo, COL_INFO, "[Node %"PRIu32"](%s) " , info->node_id, info->payload.entity_info.name);
 
 	sensorlab_tree = proto_item_add_subtree(tree, ett_sensorlab);
+	proto_tree_add_item(sensorlab_tree, hf_sensorlab_nodeid, tvb, NODE_ID_FIELD, NODE_ID_FIELD_LENGTH, ENC_LITTLE_ENDIAN);
+	proto_tree_add_item(sensorlab_tree, hf_sensorlab_eventid, tvb, EVENT_ID_FIELD, EVENT_ID_FIELD_LENGTH, ENC_LITTLE_ENDIAN);
 	proto_tree_add_item(sensorlab_tree, hf_sensorlab_entityid, tvb, LINK_REMOVE_ENTITY_ID_FIELD, ENTITY_ID_FIELD_LENGTH, ENC_LITTLE_ENDIAN);
 	proto_tree_add_item(sensorlab_tree, hf_sensorlab_linkid, tvb, LINK_REMOVE_ID_FIELD, PROPERTY_ID_FIELD_LENGTH, ENC_LITTLE_ENDIAN);
 }
@@ -1005,7 +1019,7 @@ display_frame_produce(packet_info* pinfo, sensorlab_frame_info_s* info, gchar* f
 	}
 }
 
-void 
+void
 display_frame_data_update(packet_info* pinfo, sensorlab_frame_info_s* info, gchar* frame_dissector_name,  tvbuff_t* tvb,  proto_tree* tree){
 	proto_tree* sensorlab_tree = NULL;
 	proto_tree* frame_tree = NULL;
@@ -1036,7 +1050,7 @@ display_frame_data_update(packet_info* pinfo, sensorlab_frame_info_s* info, gcha
 	}
 }
 
-void 
+void
 display_frame_property_add(packet_info* pinfo, sensorlab_frame_info_s* info, properties_and_offset_s* properties, tvbuff_t* tvb,  proto_tree* tree){
 	proto_tree* sensorlab_tree = NULL;
 	proto_tree* properties_tree = NULL;
@@ -1067,7 +1081,7 @@ display_frame_property_add(packet_info* pinfo, sensorlab_frame_info_s* info, pro
 	}
 }
 
-void 
+void
 display_frame_property_update(packet_info* pinfo, sensorlab_frame_info_s* info, properties_and_offset_s* properties, tvbuff_t* tvb,  proto_tree* tree){
 	proto_tree* sensorlab_tree = NULL;
 	proto_tree* properties_tree = NULL;
@@ -1169,7 +1183,7 @@ display_frame_rx(packet_info* pinfo, sensorlab_frame_info_s* info, gchar* frame_
 
 	properties_count = wmem_array_get_count(properties->properties_list);
 	if(properties_count > 0){
-		col_append_fstr(pinfo->cinfo, COL_INFO, "link: ");
+		col_append_fstr(pinfo->cinfo, COL_INFO, "frame: ");
 		for(index = 0; index<properties_count; index++){
 			property_info = (property_info_s *)wmem_array_index(properties->properties_list, index);
 			display_property_declaration(property_info, tvb,  properties_tree);
@@ -1178,7 +1192,7 @@ display_frame_rx(packet_info* pinfo, sensorlab_frame_info_s* info, gchar* frame_
 	}
 }
 
-void 
+void
 display_frame_consume(packet_info* pinfo, sensorlab_frame_info_s* info, gchar* frame_dissector_name,  tvbuff_t* tvb,  proto_tree* tree){
 	proto_tree* sensorlab_tree = NULL;
 	proto_tree* frame_tree = NULL;
@@ -1212,7 +1226,7 @@ display_frame_consume(packet_info* pinfo, sensorlab_frame_info_s* info, gchar* f
 	}
 }
 
-void 
+void
 register_frame_dissector_if_any(entity_scope_s* entity_scope, wmem_array_t* properties){
 	guint properties_count;
 	property_info_s* property_info;
@@ -1229,7 +1243,7 @@ register_frame_dissector_if_any(entity_scope_s* entity_scope, wmem_array_t* prop
 	}
 }
 
-static int 
+static int
 dissect_sensorlab(tvbuff_t* tvb, packet_info* pinfo, proto_tree* tree, void* data _U_){
 	sensorlab_frame_info_s* info;
 	node_scope_s* node_scope;
@@ -1364,8 +1378,8 @@ dissect_sensorlab(tvbuff_t* tvb, packet_info* pinfo, proto_tree* tree, void* dat
 					ENTITY_PROPERTY_UPDATE_PROPERTIES,
 					properties_count,
 					entity_scope->property_map );
-			info->payload.entity_info.properties = properties_and_offset->properties_list;			
-			tvb_offset = properties_and_offset->tvb_offset;		
+			info->payload.entity_info.properties = properties_and_offset->properties_list;
+			tvb_offset = properties_and_offset->tvb_offset;
 		}else{
 			properties_and_offset =(properties_and_offset_s*)wmem_alloc(wmem_packet_scope(), sizeof(properties_and_offset_s));
 			properties_and_offset->properties_list = wmem_array_new(wmem_packet_scope(), sizeof(property_info_s));
@@ -1700,10 +1714,8 @@ dissect_sensorlab(tvbuff_t* tvb, packet_info* pinfo, proto_tree* tree, void* dat
 		break;
 	default:
 		/*TODO: how do I declare that the event is not recognized? Expert field? To investigate */
+		expert_add_info(pinfo, tree, &ei_sensorlab_event_id);
 		break;
 	}
 	return tvb_offset;
 }
-
-
-

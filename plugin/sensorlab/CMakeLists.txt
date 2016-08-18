@@ -1,13 +1,8 @@
 # CMakeLists.txt
 #
-# $Id: CMakeLists.txt 34243 2010-09-24 20:41:34Z guy $
-#
 # Wireshark - Network traffic analyzer
 # By Gerald Combs <gerald@wireshark.org>
 # Copyright 1998 Gerald Combs
-#
-# Modified by Orange
-# Copyright 2015 Orange
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -21,8 +16,13 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program; if not, write to the Free Software
-# Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 #
+
+include(WiresharkPlugin)
+
+# Plugin name and version info (major minor micro extra)
+set_module_info(sensorlab 1 0 1 0)
 
 set(DISSECTOR_SRC
 	packet-sensorlab.c
@@ -37,11 +37,11 @@ set(CLEAN_FILES
 	${PLUGIN_FILES}
 )
 
-if (WERROR)
+if (WERROR_COMMON_FLAGS)
 	set_source_files_properties(
 		${CLEAN_FILES}
 		PROPERTIES
-		COMPILE_FLAGS -Werror
+		COMPILE_FLAGS ${WERROR_COMMON_FLAGS}
 	)
 endif()
 
@@ -52,17 +52,21 @@ register_dissector_files(plugin.c
 	${DISSECTOR_SRC}
 )
 
-add_library(sensorlab ${LINK_MODE_MODULE}
-	${PLUGIN_FILES}
-)
-set_target_properties(sensorlab PROPERTIES PREFIX "")
-set_target_properties(sensorlab PROPERTIES LINK_FLAGS "${WS_LINK_FLAGS}")
-
-target_link_libraries(sensorlab epan)
+add_plugin_library(sensorlab)
 
 install(TARGETS sensorlab
-	LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}/@CPACK_PACKAGE_NAME@/plugins/${CPACK_PACKAGE_VERSION} NAMELINK_SKIP
-	RUNTIME DESTINATION ${CMAKE_INSTALL_LIBDIR}/@CPACK_PACKAGE_NAME@/plugins/${CPACK_PACKAGE_VERSION}
-	ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}/@CPACK_PACKAGE_NAME@/plugins/${CPACK_PACKAGE_VERSION}
+	LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}/${CPACK_PACKAGE_NAME}/plugins/${CPACK_PACKAGE_VERSION} NAMELINK_SKIP
+	RUNTIME DESTINATION ${CMAKE_INSTALL_LIBDIR}/${CPACK_PACKAGE_NAME}/plugins/${CPACK_PACKAGE_VERSION}
+	ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}/${CPACK_PACKAGE_NAME}/plugins/${CPACK_PACKAGE_VERSION}
 )
 
+file(GLOB DISSECTOR_HEADERS RELATIVE "${CMAKE_CURRENT_SOURCE_DIR}" "*.h")
+CHECKAPI(
+	NAME
+	  sensorlab
+	SWITCHES
+	  -g abort -g termoutput -build
+	SOURCES
+	  ${DISSECTOR_SRC}
+	  ${DISSECTOR_HEADERS}
+)
