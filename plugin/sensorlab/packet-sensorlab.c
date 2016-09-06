@@ -1010,7 +1010,7 @@ display_frame_produce(packet_info* pinfo, sensorlab_frame_info_s* info, gchar* f
 	}
 	properties_count = wmem_array_get_count(properties->properties_list);
 	if(properties_count > 0){
-		col_append_fstr(pinfo->cinfo, COL_INFO, "link: ");
+		col_append_fstr(pinfo->cinfo, COL_INFO, "frame: ");
 		for(index = 0; index<properties_count; index++){
 			property_info = (property_info_s *)wmem_array_index(properties->properties_list, index);
 			display_property_declaration(property_info, tvb,  properties_tree);
@@ -1072,7 +1072,7 @@ display_frame_property_add(packet_info* pinfo, sensorlab_frame_info_s* info, pro
 
 	properties_count = wmem_array_get_count(properties->properties_list);
 	if(properties_count > 0){
-		col_append_fstr(pinfo->cinfo, COL_INFO, "link: ");
+		col_append_fstr(pinfo->cinfo, COL_INFO, "frame: ");
 		for(index = 0; index<properties_count; index++){
 			property_info = (property_info_s *)wmem_array_index(properties->properties_list, index);
 			display_property_declaration(property_info, tvb,  properties_tree);
@@ -1103,7 +1103,7 @@ display_frame_property_update(packet_info* pinfo, sensorlab_frame_info_s* info, 
 
 	properties_count = wmem_array_get_count(properties->properties_list);
 	if(properties_count > 0){
-		col_append_fstr(pinfo->cinfo, COL_INFO, "link: ");
+		col_append_fstr(pinfo->cinfo, COL_INFO, "frame: ");
 		for(index = 0; index<properties_count; index++){
 			property_info = (property_info_s *)wmem_array_index(properties->properties_list, index);
 			display_property_update(property_info, tvb,  properties_tree);
