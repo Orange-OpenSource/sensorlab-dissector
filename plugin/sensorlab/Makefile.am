@@ -1,7 +1,4 @@
 # Makefile.am
-# Automake file for sensorlab plugin
-# By Steve Limkemann <stevelim@dgtech.com>
-# Copyright 1998 Steve Limkemann
 #
 # Wireshark - Network traffic analyzer
 # By Gerald Combs <gerald@wireshark.org>
@@ -20,11 +17,27 @@
 # You should have received a copy of the GNU General Public License
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
-#
 
-include Makefile.common
 include $(top_srcdir)/Makefile.am.inc
 include ../Makefile.am.inc
+
+# the name of the plugin
+PLUGIN_NAME = sensorlab
+
+# Non-generated sources to be scanned for registration routines
+NONGENERATED_REGISTER_C_FILES = \
+	packet-sensorlab.c
+
+# Non-generated sources
+NONGENERATED_C_FILES = \
+	$(NONGENERATED_REGISTER_C_FILES)
+
+# Headers.
+CLEAN_HEADER_FILES = \
+	packet-sensorlab.h
+
+HEADER_FILES = \
+	$(CLEAN_HEADER_FILES)
 
 plugin_LTLIBRARIES = sensorlab.la
 
@@ -49,8 +62,5 @@ MAINTAINERCLEANFILES = \
 	plugin.c
 
 EXTRA_DIST = \
-	Makefile.common		\
-	Makefile.nmake		\
-	moduleinfo.nmake	\
 	plugin.rc.in		\
 	CMakeLists.txt

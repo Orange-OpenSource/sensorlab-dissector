@@ -997,7 +997,7 @@ display_frame_produce(packet_info* pinfo, sensorlab_frame_info_s* info, gchar* f
 
 	frame_dissector =find_dissector(frame_dissector_name);
 	if(frame_dissector && info->payload.frame_info.data_length >0){
-		payload_tvb = tvb_new_subset(tvb, FRAME_PRODUCE_DATA_FIELD,  info->payload.frame_info.data_length, -1);
+		payload_tvb = tvb_new_subset_length(tvb, FRAME_PRODUCE_DATA_FIELD,  info->payload.frame_info.data_length);
 		frame_tree = proto_item_add_subtree(frame_item, ett_frame);
 		call_dissector(frame_dissector, payload_tvb, pinfo, frame_tree);
 	}
@@ -1037,7 +1037,7 @@ display_frame_data_update(packet_info* pinfo, sensorlab_frame_info_s* info, gcha
 
 	frame_dissector =find_dissector(frame_dissector_name);
 	if(frame_dissector && info->payload.frame_info.data_length >0){
-		payload_tvb = tvb_new_subset(tvb, FRAME_DATA_UPDATE_DATA_FIELD,  info->payload.frame_info.data_length, -1);
+		payload_tvb = tvb_new_subset_length(tvb, FRAME_DATA_UPDATE_DATA_FIELD,  info->payload.frame_info.data_length);
 		frame_tree = proto_item_add_subtree(frame_item, ett_frame);
 		call_dissector(frame_dissector, payload_tvb, pinfo, frame_tree);
 	}
@@ -1132,7 +1132,7 @@ display_frame_tx(packet_info* pinfo, sensorlab_frame_info_s* info, gchar* frame_
 
 	frame_dissector =find_dissector(frame_dissector_name);
 	if(frame_dissector && info->payload.frame_info.data_length >0){
-		payload_tvb = tvb_new_subset(tvb, FRAME_TX_DATA_FIELD,  info->payload.frame_info.data_length, -1);
+		payload_tvb = tvb_new_subset_length(tvb, FRAME_TX_DATA_FIELD,  info->payload.frame_info.data_length);
 		frame_tree = proto_item_add_subtree(frame_item, ett_frame);
 		call_dissector(frame_dissector, payload_tvb, pinfo, frame_tree);
 	}
@@ -1170,7 +1170,7 @@ display_frame_rx(packet_info* pinfo, sensorlab_frame_info_s* info, gchar* frame_
 
 	frame_dissector =find_dissector(frame_dissector_name);
 	if(frame_dissector && info->payload.frame_info.data_length >0){
-		payload_tvb = tvb_new_subset(tvb, FRAME_RX_DATA_FIELD,  info->payload.frame_info.data_length, -1);
+		payload_tvb = tvb_new_subset_length(tvb, FRAME_RX_DATA_FIELD,  info->payload.frame_info.data_length);
 		frame_tree = proto_item_add_subtree(frame_item, ett_frame);
 		call_dissector(frame_dissector, payload_tvb, pinfo, frame_tree);
 	}
@@ -1213,7 +1213,7 @@ display_frame_consume(packet_info* pinfo, sensorlab_frame_info_s* info, gchar* f
 
 	frame_dissector =find_dissector(frame_dissector_name);
 	if(frame_dissector && info->payload.frame_info.data_length >0){
-		payload_tvb = tvb_new_subset(tvb, FRAME_CONSUME_DATA_FIELD,  info->payload.frame_info.data_length, -1);
+		payload_tvb = tvb_new_subset_length(tvb, FRAME_CONSUME_DATA_FIELD,  info->payload.frame_info.data_length);
 		frame_tree = proto_item_add_subtree(frame_item, ett_frame);
 		call_dissector(frame_dissector, payload_tvb, pinfo, frame_tree);
 	}
